@@ -1,12 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
-import sudoku_solver
-class scrape:
+
+
+
+class Scrape:
     def __init__(self, puzzle):
         self.puzzle = puzzle
 
     def create_puzzle(self, puzzle):
-        # set up 2d 9x9 array (there's probably a much easier way to do this
+        # set up 2d 9x9 array (there's probably a much easier way to do this)
         board = [
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -23,9 +25,10 @@ class scrape:
         for i in range(len(board)):
             for j in range(len(board[0])):
                 board[i][j] = puzzle[counter]
-                counter +=1
+                counter += 1
 
         return board
+
 
 def get_sudoku(p_link):
     req = requests.get(p_link)
@@ -41,44 +44,39 @@ def get_sudoku(p_link):
             if txt != '\xa0':
                 puzzle.append(int(txt))
             else:
-                 puzzle.append(0)
+                puzzle.append(0)
 
     return puzzle
 
 
-
-
-
-
-def find_empty(bo,l):
+def find_empty(bo, l):
     for i in range(9):
         for j in range(9):
-            if(bo[i][j] == 0):
+            if (bo[i][j] == 0):
                 l[0] = i
                 l[1] = j
                 return True
     return False
 
 
-
-def used_in_row(bo,row,num):
+def used_in_row(bo, row, num):
     for i in range(9):
-        if(bo[row][i] == num):
+        if (bo[row][i] == num):
             return True
     return False
 
 
-def used_in_col(bo,col,num):
+def used_in_col(bo, col, num):
     for i in range(9):
-        if(bo[i][col] == num):
+        if (bo[i][col] == num):
             return True
     return False
 
 
-def used_in_box(bo,row,col,num):
+def used_in_box(bo, row, col, num):
     for i in range(3):
         for j in range(3):
-            if(bo[row + i][col + j] == num):
+            if (bo[row + i][col + j] == num):
                 return True
     return False
 
@@ -91,7 +89,7 @@ def safe(bo, row, col, num):
 def solve(bo):
     l = [0, 0]
 
-    if (not find_empty(bo, l)):
+    if not find_empty(bo, l):
         return True
 
     row = l[0]
@@ -99,40 +97,54 @@ def solve(bo):
 
     for num in range(1, 10):
 
-        if (safe(bo, row, col, num)):
+        if safe(bo, row, col, num):
 
             bo[row][col] = num
 
-            if (solve(bo)):
+            if solve(bo):
                 return True
-            bo[row][col] = 0
-    return False
 
+            bo[row][col] = 0
+
+    return False
 
 
 def print_grid(board):
     for i in range(len(board)):
-        if i % 3  == 0 and i != 0:
+        if i % 3 == 0 and i != 0:
             print('----------------------')
         for j in range(len(board[0])):
             if j % 3 == 0 and j != 0:
-                print('|', end = "")
+                print('|', end=" ")
             if j == 8:
                 print(board[i][j])
             else:
-                print(str(board[i][j]) + " ", end ="")
+                print(str(board[i][j]) + " ", end="")
 
 
 def main():
+    board = Scrape(get_sudoku('http://www.menneske.no/sudoku/eng/'))
 
-    board = scrape(get_sudoku('http://www.menneske.no/sudoku/eng/'))
-   
     bo = board.create_puzzle(board.puzzle)
-    #print(bo)
-    if(solve(bo)):
+
+    print_grid(bo)
+    prompt = input('\nDo you want to solve the puzzle or have it solved for you?\nPress Y to solve or N to leave: ')
+
+    if (str(prompt) == 'Y'):
+        solve(bo)
         print_grid(bo)
+        p = input('\nDo you want to try another puzzle\nPress Y to try another or N to leave: ')
+        if str(p) == 'Y':
+            main()
+        else:
+            exit(0)
     else:
-        print('No Solution Found')
+        p1 = input('\nDo you want to try another puzzle\nPress Y to try another or N to leave: ')
+        if str(p1) == 'Y':
+            main()
+        else:
+            exit(0)
+
 
 if __name__ == '__main__':
     main()
